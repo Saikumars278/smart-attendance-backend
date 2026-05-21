@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Attendance Report - Nim Technologies{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Card and Table */
+    .card {
+      border-radius: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .table thead {
+      background: var(--accent-color);
+      color: #fff;
+    }
+    .table td, .table th {
+      vertical-align: middle;
+      font-size: 1rem;
+      padding: 0.9rem;
+    }
+
+    /* Custom column widths */
+    .table th:nth-child(1), .table td:nth-child(1) { min-width: 80px; }   /* ID */
+    .table th:nth-child(2), .table td:nth-child(2) { min-width: 220px; } /* Employee Name */
+    .table th:nth-child(3), .table td:nth-child(3) { min-width: 180px; } /* Date */
+    .table th:nth-child(4), .table td:nth-child(4) { min-width: 150px; } /* Status */
+
+    .badge {
+      border-radius: 20px;
+      font-weight: 500;
+      padding: 0.6rem 1.2rem;
+      font-size: 0.95rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+  <!-- Report Section -->
+  <div class="container my-5">
+    <h2 class="text-center mb-4 fw-bold" style="color: var(--accent-color);">Attendance Report</h2>
+
+    <div class="card p-4 border-0 shadow-sm">
+      <h5 class="fw-bold mb-3">Past Attendance Records</h5>
+      <div class="table-responsive rounded-3 overflow-hidden">
+        <table class="table table-hover text-center align-middle mb-0">
+          <thead style="background: var(--accent-color); color: white;">
+            <tr>
+              <th class="border-0">#</th>
+              <th class="border-0">Employee Code</th>
+              <th class="border-0">Employee Name</th>
+              <th class="border-0">Dept</th>
+              <th class="border-0">Date</th>
+              <th class="border-0">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for att in attendance %}
+            <tr>
+              <td class="border-bottom text-muted" style="font-size: 0.85rem;">{{ forloop.counter }}</td>
+              <td class="border-bottom fw-bold text-dark" style="font-size: 0.85rem;">{{ att.employee.employee_id }}</td>
+              <td class="border-bottom fw-semibold">{{ att.employee.user.name }}</td>
+              <td class="border-bottom"><span class="badge bg-light text-dark border">{{ att.employee.department.name|default:"-" }}</span></td>
+              <td class="border-bottom" style="font-size: 0.9rem;">{{ att.date|date:"d M Y" }}</td>
+              <td class="border-bottom">
+                {% if att.status == 'Present' %}
+                  <span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size: 0.8rem;">Present</span>
+                {% elif att.status == 'Absent' %}
+                  <span class="badge bg-danger-subtle text-danger border border-danger-subtle" style="font-size: 0.8rem;">Absent</span>
+                {% else %}
+                  <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle" style="font-size: 0.8rem;">{{ att.status }}</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" class="text-center py-5 text-muted">No records found</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+{% endblock %}

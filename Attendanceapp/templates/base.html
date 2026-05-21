@@ -1,0 +1,222 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Nim Technologies{% endblock %}</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+    <script>
+        // Force reload when navigating back/forward to ensure login check runs
+        window.onpageshow = function (event) {
+            if (event.persisted) {
+                window.location.reload();
+            }
+        };
+    </script>
+
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #a4c6c2, #9ccdcd);
+            --accent-color: #6610f2;
+            --accent-hover: #520dc2;
+            --bg-color: #e0f2fe;
+            --navbar-bg: #ffffff;
+            --card-glass: rgba(255, 255, 255, 0.9);
+        }
+
+        body {
+            background-color: #d1f2eb !important;
+            font-family: 'Poppins', sans-serif;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Modern Navbar */
+        .navbar {
+            background-color: var(--navbar-bg);
+            padding: 0.8rem 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .navbar-brand {
+            font-weight: 800;
+            color: var(--accent-color) !important;
+            font-size: 1.4rem;
+            letter-spacing: -0.5px;
+        }
+
+        .nav-link {
+            font-weight: 600;
+            color: #555 !important;
+            font-size: 0.9rem;
+            padding: 0.6rem 1.2rem !important;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            margin: 0 4px;
+        }
+
+        .nav-link:hover {
+            color: var(--accent-color) !important;
+            background: rgba(102, 16, 242, 0.05);
+        }
+
+        .nav-link.active {
+            color: var(--accent-color) !important;
+            background: rgba(102, 16, 242, 0.1);
+        }
+
+        .logout-btn {
+            background: #fff;
+            color: #dc3545 !important;
+            border: 2px solid #fee2e2;
+            border-radius: 12px;
+            padding: 6px 20px !important;
+            font-weight: 700;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: #fee2e2;
+            border-color: #fecaca;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding-left: 15px;
+                padding-right: 15px;
+            }
+        }
+        
+        /* Global Loading Overlay */
+        #global-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(3px);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .spinner-custom {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--accent-color, #6610f2);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        body.page-loading #global-loader {
+            display: flex;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <!-- Modern Navbar -->
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'home_page' %}">Nim Technologies</a>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <i class="bi bi-list fs-2 text-dark"></i>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-lg-center">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/home/' %}active{% endif %}" href="{% url 'home_page' %}">
+                            <i class="bi bi-grid-fill me-1"></i> Attendance
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'leave-approvals' in request.path %}active{% endif %}"
+                           href="{% url 'admin_leave_approval' %}">
+                            <i class="bi bi-calendar-event-fill me-1"></i> Leave Requests
+                            {% if pending_leaves_count > 0 %}
+                            <span class="badge rounded-pill bg-danger ms-1" style="font-size: 0.7rem;">{{ pending_leaves_count }}</span>
+                            {% endif %}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'permission-approvals' in request.path %}active{% endif %}"
+                           href="{% url 'admin_permission_approval' %}">
+                            <i class="bi bi-clock-history me-1"></i> Permissions
+                            {% if pending_permissions_count > 0 %}
+                            <span class="badge rounded-pill bg-danger ms-1" style="font-size: 0.7rem;">{{ pending_permissions_count }}</span>
+                            {% endif %}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'system-notifications' in request.path %}active{% endif %}"
+                           href="{% url 'admin_notifications' %}">
+                            <i class="bi bi-bell-fill me-1"></i> Notifications
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'employeemanagement' in request.path %}active{% endif %}"
+                           href="{% url 'employeemanagement' %}">
+                            <i class="bi bi-people-fill me-1"></i> Employees
+                        </a>
+                    </li>
+                    <li class="nav-item ms-lg-3 mt-3 mt-lg-0">
+                        <a href="{% url 'admin_logout' %}" class="nav-link logout-btn text-center">
+                            <i class="bi bi-box-arrow-right me-1"></i> Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    {% block content %}{% endblock %}
+
+    <!-- Global Loader -->
+    <div id="global-loader">
+        <div class="spinner-custom"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Global Loading Logic
+        window.addEventListener('beforeunload', () => {
+            document.body.classList.add('page-loading');
+        });
+
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', (ev) => {
+                // Delay slightly to check if validity fails
+                setTimeout(() => {
+                    // Ignore forms that are handled via AJAX (defaultPrevented)
+                    if (!ev.defaultPrevented) {
+                        if (!form.checkValidity || form.checkValidity()) {
+                            document.body.classList.add('page-loading');
+                        }
+                    }
+                }, 10);
+            });
+        });
+
+        // Hide loader if page is shown from cache
+        window.addEventListener('pageshow', (event) => {
+            document.body.classList.remove('page-loading');
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

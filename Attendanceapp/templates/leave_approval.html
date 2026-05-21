@@ -1,0 +1,605 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Leave Approvals Dashboard - Nim Technologies{% endblock %}
+
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --accent: #6610f2;
+        --accent-light: rgba(102, 16, 242, 0.08);
+        --bg: #d1f2eb;
+        --white: #ffffff;
+    }
+
+    body {
+        background-color: var(--bg) !important;
+        font-family: 'Poppins', sans-serif;
+        min-height: 100vh;
+    }
+
+    .page-wrapper {
+        max-width: 1300px;
+        margin: 0 auto;
+        padding: 40px 24px;
+    }
+
+    /* ── Page Header ── */
+    .page-header {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        border-radius: 24px;
+        padding: 36px 40px;
+        margin-bottom: 32px;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+    .page-header::before {
+        content: ''; position: absolute;
+        top: -60px; right: -60px;
+        width: 220px; height: 220px;
+        border-radius: 50%;
+        background: rgba(102, 16, 242, 0.15);
+    }
+    .page-header::after {
+        content: ''; position: absolute;
+        bottom: -80px; left: -40px;
+        width: 280px; height: 280px;
+        border-radius: 50%;
+        background: rgba(16, 185, 129, 0.08);
+    }
+    .page-header h1 {
+        font-size: clamp(1.6rem, 3vw, 2.5rem);
+        font-weight: 800; margin: 0 0 6px;
+        letter-spacing: -0.5px; position: relative; z-index: 1;
+    }
+    .page-header p {
+        color: rgba(255,255,255,0.65); font-size: 0.9rem;
+        font-weight: 500; margin: 0; position: relative; z-index: 1;
+    }
+    .header-meta {
+        display: inline-flex; align-items: center; gap: 6px;
+        background: rgba(255,255,255,0.1);
+        border: 1px solid rgba(255,255,255,0.15);
+        border-radius: 100px;
+        padding: 5px 14px; font-size: 0.78rem; font-weight: 600;
+        color: rgba(255,255,255,0.8);
+        margin-top: 14px; position: relative; z-index: 1;
+    }
+
+    /* ── Stat Cards ── */
+    .stat-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 28px; }
+    @media (max-width: 900px) { .stat-grid { grid-template-columns: repeat(2,1fr); } }
+    @media (max-width: 500px)  { .stat-grid { grid-template-columns: 1fr; } }
+
+    .stat-card {
+        background: #fff;
+        border-radius: 18px;
+        padding: 20px 22px;
+        box-shadow: 0 4px 18px rgba(0,0,0,0.05);
+        display: flex; align-items: center; gap: 16px;
+        transition: transform 0.25s, box-shadow 0.25s;
+    }
+    .stat-card:hover { transform: translateY(-4px); box-shadow: 0 12px 28px rgba(0,0,0,0.09); }
+    .stat-icon { width: 50px; height: 50px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
+    .stat-num  { font-size: 1.9rem; font-weight: 800; line-height: 1; }
+    .stat-lbl  { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; color: #94a3b8; margin-top: 2px; }
+
+    /* ── Filter Bar ── */
+    .filter-bar {
+        background: #fff;
+        border-radius: 18px;
+        padding: 20px 24px;
+        margin-bottom: 24px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+        display: flex; flex-wrap: wrap; align-items: flex-end; gap: 14px;
+    }
+    .filter-group { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 140px; }
+    .filter-group label { font-size: 0.68rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.6px; }
+    .filter-input {
+        border: 1.5px solid #e2e8f0; border-radius: 12px;
+        padding: 9px 14px; font-size: 0.88rem; font-weight: 600;
+        font-family: 'Poppins', sans-serif; color: #1e293b; background: #f8fafc;
+        transition: all 0.2s; outline: none;
+    }
+    .filter-input:focus { border-color: var(--accent); background: #fff; box-shadow: 0 0 0 4px var(--accent-light); }
+    .btn-reset {
+        background: none; border: 1.5px solid #e2e8f0; border-radius: 12px;
+        padding: 9px 18px; font-size: 0.82rem; font-weight: 700;
+        color: #64748b; text-decoration: none;
+        display: inline-flex; align-items: center; gap: 6px;
+        transition: all 0.2s; align-self: flex-end; white-space: nowrap;
+    }
+    .btn-reset:hover { background: #f1f5f9; color: #1e293b; }
+
+    /* ── Context Bar ── */
+    .context-bar {
+        display: flex; align-items: center; justify-content: space-between;
+        margin-bottom: 18px; padding: 0 4px;
+    }
+    .context-bar .context-label {
+        font-size: 0.8rem; font-weight: 600; color: #64748b;
+        display: flex; align-items: center; gap: 6px;
+    }
+    .context-bar .emp-count {
+        background: var(--accent-light); color: var(--accent);
+        border: 1px solid rgba(102,16,242,0.15);
+        border-radius: 20px; padding: 3px 12px;
+        font-size: 0.72rem; font-weight: 800;
+    }
+
+    /* ── Employee Group Card ── */
+    .emp-card {
+        background: #fff;
+        border-radius: 20px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+        margin-bottom: 18px;
+        overflow: hidden;
+        border: 1px solid #f0f4f8;
+    }
+
+    .emp-header {
+        display: flex; align-items: center; justify-content: space-between;
+        flex-wrap: wrap; gap: 12px;
+        padding: 18px 24px;
+        background: linear-gradient(135deg, #f8f4ff 0%, #eef6ff 100%);
+        border-bottom: 1px solid #ede9fe;
+        cursor: pointer; user-select: none;
+        transition: background 0.2s;
+    }
+    .emp-header:hover { background: linear-gradient(135deg, #f0eaff 0%, #e8f3ff 100%); }
+
+    .emp-avatar {
+        width: 46px; height: 46px; border-radius: 14px;
+        background: linear-gradient(135deg, var(--accent) 0%, #8b5cf6 100%);
+        color: #fff; font-weight: 700; font-size: 1rem;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0; box-shadow: 0 4px 10px rgba(102,16,242,0.2);
+    }
+    .emp-name { font-size: 0.95rem; font-weight: 700; color: #1e293b; }
+    .emp-id   { font-size: 0.72rem; color: #94a3b8; font-weight: 600; }
+
+    /* ── Stat Pills ── */
+    .stat-pill {
+        display: inline-flex; align-items: center; gap: 5px;
+        padding: 4px 11px; border-radius: 20px;
+        font-size: 0.73rem; font-weight: 700; border: 1.5px solid;
+    }
+    .stat-sick    { background:#f0fdf4; color:#16a34a;  border-color:#bbf7d0; }
+    .stat-casual  { background:#eff6ff; color:#2563eb;  border-color:#bfdbfe; }
+    .stat-lop     { background:#fffbeb; color:#b45309;  border-color:#fde68a; }
+    .stat-yearly  { background:#f5f3ff; color:#6d28d9;  border-color:#ddd6fe; }
+    .stat-over-limit { background:#fff1f2 !important; color:#e11d48 !important; border-color:#fecdd3 !important; box-shadow: 0 0 0 2px rgba(225,29,72,0.1); }
+
+    .leave-count-badge {
+        background: var(--accent); color: #fff;
+        font-size: 0.68rem; font-weight: 800;
+        padding: 3px 11px; border-radius: 20px;
+    }
+
+    /* ── Leave Rows ── */
+    .leave-row-header {
+        display: grid; grid-template-columns: 1.8fr 1.4fr 2.6fr 1.2fr;
+        padding: 10px 24px;
+        font-size: 0.67rem; font-weight: 800; text-transform: uppercase;
+        letter-spacing: 0.7px; color: #94a3b8;
+        background: #fafbfc; border-bottom: 1px solid #f1f5f9;
+    }
+
+    .leave-row {
+        display: grid; grid-template-columns: 1.8fr 1.4fr 2.6fr 1.2fr;
+        align-items: center; padding: 15px 24px;
+        border-bottom: 1px solid #f8fafc;
+        transition: background 0.15s;
+    }
+    .leave-row:last-child { border-bottom: none; }
+    .leave-row:hover { background: #fafaff; }
+
+    .leave-type-badge {
+        display: inline-flex; align-items: center; gap: 5px;
+        padding: 4px 12px; border-radius: 20px;
+        font-size: 0.73rem; font-weight: 700; border: 1px solid;
+    }
+    .leave-type-badge.sick    { background:#f0fdf4; color:#15803d; border-color:#bbf7d0; }
+    .leave-type-badge.casual  { background:#eff6ff; color:#1d4ed8; border-color:#bfdbfe; }
+    .leave-type-badge.lop     { background:#fff7ed; color:#c2410c; border-color:#fed7aa; }
+
+    .leave-period {
+        font-size: 0.8rem; color: #475569; font-weight: 600;
+        display: flex; align-items: center; gap: 5px;
+    }
+    .leave-reason { font-size: 0.8rem; color: #64748b; line-height: 1.45; }
+
+    .action-group { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+    .btn-approve { background:#16a34a; color:#fff; border:none; border-radius:9px; padding:5px 13px; font-size:0.75rem; font-weight:700; cursor:pointer; transition:all 0.2s; }
+    .btn-approve:hover { background:#15803d; transform: translateY(-1px); }
+    .btn-lop     { background:#d97706; color:#fff; border:none; border-radius:9px; padding:5px 13px; font-size:0.75rem; font-weight:700; cursor:pointer; transition:all 0.2s; }
+    .btn-lop:hover { background:#b45309; transform: translateY(-1px); }
+    .btn-reject  { background:transparent; color:#dc2626; border:1.5px solid #fca5a5; border-radius:9px; padding:5px 13px; font-size:0.75rem; font-weight:700; cursor:pointer; transition:all 0.2s; }
+    .btn-reject:hover { background:#fef2f2; }
+
+    .status-badge-approved { background:#dcfce7; color:#15803d; border:1.5px solid #bbf7d0; border-radius:20px; padding:4px 14px; font-size:0.72rem; font-weight:700; }
+    .status-badge-rejected { background:#fee2e2; color:#dc2626; border:1.5px solid #fca5a5; border-radius:20px; padding:4px 14px; font-size:0.72rem; font-weight:700; }
+
+    /* ── Empty State ── */
+    .empty-state { padding: 60px 20px; text-align: center; background: #fff; border-radius: 20px; box-shadow: 0 4px 16px rgba(0,0,0,0.05); }
+    .empty-icon { width: 72px; height: 72px; border-radius: 20px; background:#f1f5f9; display:flex; align-items:center; justify-content:center; margin:0 auto 20px; font-size:1.8rem; color:#cbd5e1; }
+
+    /* ── Loading Overlay ── */
+    .loading-overlay {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(255,255,255,0.65); backdrop-filter: blur(4px);
+        z-index: 1000; display: none; align-items: center; justify-content: center;
+        border-radius: 20px;
+    }
+    .spinner-custom-local {
+        width: 44px; height: 44px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid var(--accent);
+        border-radius: 50%;
+        animation: spin 0.9s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .refreshing .loading-overlay { display: flex; }
+
+    /* ── Action Button Spinners ── */
+    .btn-spinner {
+        width: 14px; height: 14px;
+        border: 2.5px solid rgba(255,255,255,0.3);
+        border-top-color: #fff;
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+        display: inline-block;
+        vertical-align: middle;
+    }
+    .btn-reject .btn-spinner { border-color: rgba(220, 38, 38, 0.2); border-top-color: #dc2626; }
+    
+    .btn-loading { pointer-events: none; opacity: 0.7; transform: scale(0.96); }
+
+    @media (max-width: 900px) {
+        .emp-header { flex-direction: column; align-items: flex-start; gap: 14px; padding: 18px 20px; }
+        .leave-row, .leave-row-header { grid-template-columns: 1fr; gap: 8px; }
+        .leave-row { padding: 16px 20px; }
+        .leave-row-header { display: none; }
+        .action-group { justify-content: flex-start; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-wrapper position-relative" id="leave-dashboard-content">
+    <!-- Loading Overlay -->
+    <div class="loading-overlay"><div class="spinner-custom-local"></div></div>
+
+    <!-- ── Page Header ── -->
+    <div class="page-header">
+        <h1><i class="bi bi-calendar2-check me-2"></i>Leave Approvals</h1>
+        <p>Review, approve, and track employee leave requests with monthly policy enforcement.</p>
+        <div class="header-meta">
+            <i class="bi bi-calendar3"></i>
+            Monthly records reflect <strong style="color:#fff;">{{ target_month_name }}</strong>
+        </div>
+    </div>
+
+    <!-- ── Stat Cards ── -->
+    <div class="stat-grid">
+        <div class="stat-card">
+            <div class="stat-icon" style="background:#fffbeb;"><i class="bi bi-hourglass-split text-warning"></i></div>
+            <div>
+                <div class="stat-num text-warning">{{ pending_count }}</div>
+                <div class="stat-lbl">Pending</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="background:#fff7ed;"><i class="bi bi-cash-stack" style="color:#ea580c;"></i></div>
+            <div>
+                <div class="stat-num" style="color:#ea580c;">{{ lop_count }}</div>
+                <div class="stat-lbl">Approved LOP</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="background:#f0fdf4;"><i class="bi bi-patch-check-fill text-success"></i></div>
+            <div>
+                <div class="stat-num text-success">{{ paid_count }}</div>
+                <div class="stat-lbl">Approved</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="background:#fef2f2;"><i class="bi bi-x-octagon-fill text-danger"></i></div>
+            <div>
+                <div class="stat-num text-danger">{{ rejected_count }}</div>
+                <div class="stat-lbl">Rejected</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Filter Bar ── -->
+    <div class="filter-bar">
+        <div class="filter-group">
+            <label>From Date</label>
+            <input type="date" class="filter-input" name="start_date" id="start-date-input" value="{{ start_date }}">
+        </div>
+        <div class="filter-group">
+            <label>To Date</label>
+            <input type="date" class="filter-input" name="end_date" id="end-date-input" value="{{ end_date }}">
+        </div>
+        <div class="filter-group">
+            <label>Status</label>
+            <select class="filter-input" name="status" id="status-filter-select">
+                <option value="Pending"  {% if current_status == 'Pending'  %}selected{% endif %}>⏳ Pending</option>
+                <option value="Approved" {% if current_status == 'Approved' %}selected{% endif %}>✅ Approved</option>
+                <option value="Rejected" {% if current_status == 'Rejected' %}selected{% endif %}>❌ Rejected</option>
+            </select>
+        </div>
+        <a href="{% url 'admin_leave_approval' %}" class="btn-reset">
+            <i class="bi bi-arrow-counterclockwise"></i> Reset
+        </a>
+        <a href="javascript:void(0)" onclick="exportLeaveExcel()" class="btn-reset flex-grow-0" style="background:#10b981; color:white; border-color:#059669; margin-left: auto;">
+            <i class="bi bi-file-earmark-excel"></i> Export Excel
+        </a>
+    </div>
+
+    <!-- ── Context Bar ── -->
+    <div class="context-bar">
+        <span class="context-label"><i class="bi bi-people-fill text-muted"></i> Employees with requests</span>
+        <span class="emp-count">{{ grouped_requests|length }} employee{{ grouped_requests|length|pluralize }}</span>
+    </div>
+
+    <!-- ── Employee Group Cards ── -->
+    {% for group in grouped_requests %}
+    <div class="emp-card">
+        <div class="emp-header" data-bs-toggle="collapse" data-bs-target="#emp-{{ forloop.counter }}" aria-expanded="true">
+            <div class="d-flex align-items-center gap-3">
+                <div class="emp-avatar">{{ group.employee.user.name|slice:":1"|upper }}</div>
+                <div>
+                    <div class="emp-name">{{ group.employee.user.name }}</div>
+                    <div class="emp-id">{{ group.employee.employee_id }} • {{ group.employee.department.name|default:"-" }}</div>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <span class="stat-pill stat-yearly {% if group.yearly_total > 14 %}stat-over-limit{% endif %}"
+                      title="Yearly Paid Usage (Sick + Casual)">
+                    <i class="bi bi-calendar-check-fill"></i> Used: {{ group.yearly_total }}/14
+                </span>
+                <div class="d-flex align-items-center gap-1 px-2 py-1 rounded-pill bg-white border" style="border-color:#e8edf2!important;">
+                    <span class="stat-pill stat-sick {% if group.stats.Sick_Leave.days > 1 %}stat-over-limit{% endif %}" title="Sick Leave this month">
+                        <i class="bi bi-thermometer-half"></i> S:{{ group.stats.Sick_Leave.days }}/1
+                    </span>
+                    <span class="stat-pill stat-casual {% if group.stats.Casual_Leave.days > 1 %}stat-over-limit{% endif %}" title="Casual Leave this month">
+                        <i class="bi bi-umbrella"></i> C:{{ group.stats.Casual_Leave.days }}/1
+                    </span>
+                    <span class="stat-pill stat-lop" title="Loss of Pay this month">
+                        <i class="bi bi-cash"></i> L:{{ group.stats.Loss_of_Pay.days }}
+                    </span>
+                </div>
+                <span class="leave-count-badge">{{ group.leaves|length }} req</span>
+                <i class="bi bi-chevron-down text-muted" style="font-size:0.8rem;"></i>
+            </div>
+        </div>
+
+        <div class="collapse show" id="emp-{{ forloop.counter }}">
+            <div class="leave-row-header d-none d-lg-grid">
+                <div>Type</div>
+                <div>Period</div>
+                <div>Reason</div>
+                <div style="text-align:right;">Action</div>
+            </div>
+            <div>
+                {% for req in group.leaves %}
+                <div class="leave-row">
+                    <div>
+                        {% if req.leave_type == 'Sick Leave' %}
+                            <span class="leave-type-badge sick"><i class="bi bi-thermometer-half"></i> Sick Leave</span>
+                        {% elif req.leave_type == 'Casual Leave' %}
+                            <span class="leave-type-badge casual"><i class="bi bi-umbrella"></i> Casual Leave</span>
+                        {% else %}
+                            <span class="leave-type-badge lop"><i class="bi bi-cash"></i> Loss of Pay</span>
+                        {% endif %}
+                    </div>
+                    <div class="leave-period">
+                        <i class="bi bi-calendar-range text-muted"></i>
+                        {{ req.start_date }} → {{ req.end_date }}
+                    </div>
+                    <div class="leave-reason">{{ req.reason }}</div>
+                    <div class="action-group">
+                        {% if req.status == 'Pending' %}
+                        <form action="{% url 'admin_update_leave' %}" method="POST" style="display:contents;">
+                            {% csrf_token %}
+                            <input type="hidden" name="leave_id" value="{{ req.id }}">
+                            <button class="btn-approve" type="submit" name="status" value="Approved">Approve</button>
+                            <button class="btn-lop"     type="submit" name="status" value="Approved_LOP">LOP</button>
+                            <button class="btn-reject"  type="submit" name="status" value="Rejected">Reject</button>
+                        </form>
+                        {% elif req.status == 'Approved' %}
+                            <span class="status-badge-approved">Approved</span>
+                        {% else %}
+                            <span class="status-badge-rejected">Rejected</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="empty-state">
+        <div class="empty-icon"><i class="bi bi-inbox"></i></div>
+        <div class="fw-bold text-muted" style="font-size:0.95rem;">No leave requests found</div>
+        <div class="text-muted small mt-1">Try adjusting the filters or date range above.</div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const content = document.getElementById('leave-dashboard-content');
+
+        window.exportLeaveExcel = () => {
+            const currentStart  = document.getElementById('start-date-input').value;
+            const currentEnd    = document.getElementById('end-date-input').value;
+            const currentStatus = document.getElementById('status-filter-select').value;
+            let url = "{% url 'export_leave_excel' %}?status=" + currentStatus;
+            if(currentStart) url += "&start_date=" + currentStart;
+            if(currentEnd) url += "&end_date=" + currentEnd;
+            window.location.href = url;
+        };
+
+        const refresh = () => {
+            const currentStart  = document.getElementById('start-date-input');
+            const currentEnd    = document.getElementById('end-date-input');
+            const currentStatus = document.getElementById('status-filter-select');
+            if (!currentStart || !currentEnd || !currentStatus) return;
+
+            const url = new URL(window.location.href);
+            url.searchParams.set('start_date', currentStart.value);
+            url.searchParams.set('end_date',   currentEnd.value);
+            url.searchParams.set('status',     currentStatus.value);
+
+            content.classList.add('refreshing');
+
+            fetch(url)
+                .then(r => r.text())
+                .then(html => {
+                    const doc = new DOMParser().parseFromString(html, 'text/html');
+                    const newContent = doc.getElementById('leave-dashboard-content');
+                    if (newContent) {
+                        content.innerHTML = newContent.innerHTML;
+                    }
+                    window.history.pushState({}, '', url);
+                    bindListeners();
+                })
+                .catch(err => console.error('Dashboard refresh failed:', err))
+                .finally(() => {
+                    content.classList.remove('refreshing');
+                });
+
+            // 🛡️ Safety Guard: Auto-unstick after 8 seconds
+            setTimeout(() => {
+                if (content.classList.contains('refreshing')) {
+                    content.classList.remove('refreshing');
+                }
+            }, 8000);
+        };
+
+        const bindListeners = () => {
+            const s = document.getElementById('start-date-input');
+            const e = document.getElementById('end-date-input');
+            const f = document.getElementById('status-filter-select');
+            if (s) s.addEventListener('change', refresh);
+            if (e) e.addEventListener('change', refresh);
+            if (f) f.addEventListener('change', refresh);
+
+            document.querySelectorAll('.emp-card form').forEach(form => {
+                form.addEventListener('submit', ev => {
+                    ev.preventDefault();
+                    
+                    const submitter = ev.submitter;
+                    const formData = new FormData(form);
+                    const actionGroup = form.closest('.action-group');
+                    
+                    if (submitter && submitter.name) {
+                        formData.append(submitter.name, submitter.value);
+                    }
+
+                    // ── Visual feedback: Loading state ──
+                    const originalContent = submitter.innerHTML;
+                    submitter.innerHTML = '<span class="btn-spinner"></span>';
+                    submitter.classList.add('btn-loading');
+                    form.querySelectorAll('button').forEach(btn => btn.disabled = true);
+
+                    fetch(form.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            // ── Instant DOM Update ──
+                            const badgeCls = data.new_status === 'Approved' ? 'status-badge-approved' : 'status-badge-rejected';
+                            actionGroup.innerHTML = `<span class="${badgeCls}">${data.new_status}</span>`;
+                            
+                            // If it was forced to LOP, we might want a hint, but the badge is consistent
+                            if (data.new_type === 'Loss of Pay') {
+                                // optional: update the leave type badge in this row if needed
+                                const row = actionGroup.closest('.leave-row');
+                                const typeCell = row?.querySelector('.leave-type-badge');
+                                if (typeCell) {
+                                    typeCell.className = 'leave-type-badge lop';
+                                    typeCell.innerHTML = '<i class="bi bi-cash"></i> Loss of Pay';
+                                }
+                            }
+
+                            // ── Update Global Stats instantly ──
+                            updateTopStats(data);
+
+                            // ── Update Employee specific header pills ──
+                            updateEmployeeHeader(form.closest('.emp-card'), data);
+                        } else {
+                            alert('Error: ' + data.message);
+                            submitter.innerHTML = originalContent;
+                            submitter.classList.remove('btn-loading');
+                            form.querySelectorAll('button').forEach(btn => btn.disabled = false);
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Approval failed:', err);
+                        submitter.innerHTML = originalContent;
+                        submitter.classList.remove('btn-loading');
+                        form.querySelectorAll('button').forEach(btn => btn.disabled = false);
+                    });
+                });
+            });
+
+            const updateTopStats = (data) => {
+                const statCards = document.querySelectorAll('.stat-card .stat-num');
+                if (statCards.length >= 4) {
+                    statCards[0].textContent = data.pending_count;
+                    statCards[1].textContent = data.lop_count;
+                    statCards[2].textContent = data.paid_count;
+                    statCards[3].textContent = data.rejected_count;
+                }
+            };
+
+            const updateEmployeeHeader = (empCard, data) => {
+                if (!empCard || !data.employee_stats) return;
+
+                // Update Yearly Total
+                const yearlyPill = empCard.querySelector('.stat-yearly');
+                if (yearlyPill) {
+                    yearlyPill.innerHTML = `<i class="bi bi-calendar-check-fill"></i> Used: ${data.employee_yearly_total}/14`;
+                    if (data.employee_yearly_total > 14) yearlyPill.classList.add('stat-over-limit');
+                    else yearlyPill.classList.remove('stat-over-limit');
+                }
+
+                // Update Monthly Pills
+                const sickPill = empCard.querySelector('.stat-sick');
+                if (sickPill) {
+                    sickPill.innerHTML = `<i class="bi bi-thermometer-half"></i> S:${data.employee_stats.Sick_Leave}/1`;
+                    if (data.employee_stats.Sick_Leave > 1) sickPill.classList.add('stat-over-limit');
+                    else sickPill.classList.remove('stat-over-limit');
+                }
+
+                const casualPill = empCard.querySelector('.stat-casual');
+                if (casualPill) {
+                    casualPill.innerHTML = `<i class="bi bi-umbrella"></i> C:${data.employee_stats.Casual_Leave}/1`;
+                    if (data.employee_stats.Casual_Leave > 1) casualPill.classList.add('stat-over-limit');
+                    else casualPill.classList.remove('stat-over-limit');
+                }
+
+                const lopPill = empCard.querySelector('.stat-lop');
+                if (lopPill) {
+                    lopPill.innerHTML = `<i class="bi bi-cash"></i> L:${data.employee_stats.Loss_of_Pay}`;
+                }
+            };
+        };
+
+        bindListeners();
+    });
+</script>
+{% endblock %}

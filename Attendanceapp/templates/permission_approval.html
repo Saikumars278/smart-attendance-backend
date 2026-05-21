@@ -1,0 +1,728 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Permission Approvals - Nim Technologies{% endblock %}
+
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --accent: #6610f2;
+        --accent-light: rgba(102, 16, 242, 0.08);
+        --bg: #d1f2eb;
+        --white: #ffffff;
+    }
+
+    body {
+        background-color: var(--bg) !important;
+        font-family: 'Poppins', sans-serif;
+        min-height: 100vh;
+    }
+
+    .page-wrapper {
+        max-width: 1300px;
+        margin: 0 auto;
+        padding: 40px 24px;
+    }
+
+    /* ── Page Header ── */
+    .page-header {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        border-radius: 24px;
+        padding: 36px 40px;
+        margin-bottom: 32px;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -60px; right: -60px;
+        width: 220px; height: 220px;
+        border-radius: 50%;
+        background: rgba(102, 16, 242, 0.15);
+    }
+
+    .page-header::after {
+        content: '';
+        position: absolute;
+        bottom: -80px; left: -40px;
+        width: 280px; height: 280px;
+        border-radius: 50%;
+        background: rgba(16, 185, 129, 0.08);
+    }
+
+    .page-header h1 {
+        font-size: clamp(1.6rem, 3vw, 2.5rem);
+        font-weight: 800;
+        margin: 0 0 6px;
+        letter-spacing: -0.5px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .page-header p {
+        color: rgba(255,255,255,0.65);
+        font-size: 0.9rem;
+        font-weight: 500;
+        margin: 0;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* ── Summary Cards ── */
+    .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 28px; }
+    @media (max-width: 768px) { .stat-grid { grid-template-columns: 1fr; } }
+
+    .stat-card {
+        background: #fff;
+        border-radius: 20px;
+        padding: 24px 28px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        transition: transform 0.25s, box-shadow 0.25s;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 30px rgba(0,0,0,0.09);
+    }
+
+    .stat-icon-wrap {
+        width: 58px; height: 58px;
+        border-radius: 16px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+
+    .stat-text .num {
+        font-size: 2rem;
+        font-weight: 800;
+        line-height: 1;
+        margin-bottom: 2px;
+    }
+
+    .stat-text .lbl {
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.7px;
+        color: #94a3b8;
+    }
+
+    /* ── Content Card ── */
+    .content-card {
+        background: rgba(255,255,255,0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 24px;
+        box-shadow: 0 8px 40px rgba(0,0,0,0.07);
+        overflow: hidden;
+        position: relative;
+    }
+
+    /* ── Filter Bar ── */
+    .filter-bar {
+        padding: 20px 28px;
+        background: #f8fafc;
+        border-bottom: 1px solid #f1f5f9;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        gap: 16px;
+    }
+
+    .filter-group { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 160px; }
+    .filter-group label {
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+    }
+
+    .filter-input {
+        border: 1.5px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 9px 14px;
+        font-size: 0.88rem;
+        font-weight: 600;
+        font-family: 'Poppins', sans-serif;
+        color: #1e293b;
+        background: #fff;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        outline: none;
+    }
+
+    .filter-input:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 4px rgba(102,16,242,0.08);
+    }
+
+    .btn-reset {
+        background: none;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 9px 18px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: #64748b;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s;
+        white-space: nowrap;
+        align-self: flex-end;
+    }
+
+    .btn-reset:hover { background: #f1f5f9; color: #1e293b; border-color: #cbd5e1; }
+
+    /* ── Table Header ── */
+    .table-header {
+        padding: 18px 28px 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .table-header h6 {
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+        font-size: 0.9rem;
+    }
+
+    .count-badge {
+        background: var(--accent-light);
+        color: var(--accent);
+        font-size: 0.72rem;
+        font-weight: 800;
+        padding: 3px 12px;
+        border-radius: 20px;
+        border: 1px solid rgba(102,16,242,0.15);
+    }
+
+    /* ── Premium Table ── */
+    .premium-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .premium-table thead th {
+        padding: 12px 20px;
+        font-size: 0.7rem;
+        font-weight: 800;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        background: #fafbfc;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .premium-table tbody tr {
+        border-bottom: 1px solid #f8fafc;
+        transition: background 0.15s;
+    }
+
+    .premium-table tbody tr:hover { background: #f8fafc; }
+    .premium-table tbody tr:last-child { border-bottom: none; }
+
+    .premium-table tbody td {
+        padding: 18px 20px;
+        vertical-align: middle;
+    }
+
+    /* ── Avatar ── */
+    .avatar-wrap {
+        width: 42px; height: 42px;
+        border-radius: 13px;
+        background: linear-gradient(135deg, var(--accent) 0%, #8b5cf6 100%);
+        color: #fff;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 700; font-size: 0.95rem;
+        box-shadow: 0 4px 10px rgba(102,16,242,0.18);
+        flex-shrink: 0;
+    }
+
+    /* ── Time Badge ── */
+    .time-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        background: #eff6ff;
+        color: #2563eb;
+        border: 1px solid #bfdbfe;
+        border-radius: 100px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    /* ── Action Buttons ── */
+    .btn-approve {
+        width: 36px; height: 36px;
+        border-radius: 10px;
+        background: #dcfce7; color: #15803d;
+        border: none; display: flex; align-items: center; justify-content: center;
+        transition: all 0.2s; font-weight: 700;
+    }
+    .btn-approve:hover { background: #bbf7d0; transform: scale(1.1); }
+
+    .btn-reject {
+        width: 36px; height: 36px;
+        border-radius: 10px;
+        background: #fee2e2; color: #b91c1c;
+        border: none; display: flex; align-items: center; justify-content: center;
+        transition: all 0.2s; font-weight: 700;
+    }
+    .btn-reject:hover { background: #fecdd3; transform: scale(1.1); }
+
+    /* ── Inline Button Spinner ── */
+    .btn-spinner {
+        width: 16px; height: 16px;
+        border: 2.5px solid rgba(0,0,0,0.15);
+        border-top-color: currentColor;
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+        display: inline-block;
+    }
+
+    .btn-approve.is-loading,
+    .btn-reject.is-loading {
+        pointer-events: none;
+        opacity: 0.7;
+        transform: scale(0.95);
+    }
+
+    .status-badge {
+        padding: 6px 14px;
+        border-radius: 100px;
+        font-size: 0.72rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        white-space: nowrap;
+    }
+
+    /* ── Loading Overlay ── */
+    .loading-overlay {
+        position: absolute; top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(255,255,255,0.7);
+        backdrop-filter: blur(4px);
+        z-index: 1000;
+        display: none; align-items: center; justify-content: center;
+        border-radius: 24px;
+    }
+
+    .spinner-custom {
+        width: 48px; height: 48px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid var(--accent);
+        border-radius: 50%;
+        animation: spin 0.9s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .refreshing .loading-overlay { display: flex; }
+
+    /* ── Empty State ── */
+    .empty-state {
+        padding: 60px 20px;
+        text-align: center;
+    }
+    .empty-state .empty-icon {
+        width: 72px; height: 72px;
+        border-radius: 20px;
+        background: #f1f5f9;
+        display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 20px;
+        font-size: 1.8rem;
+        color: #cbd5e1;
+    }
+
+    /* ── Mobile request card ── */
+    .request-card {
+        background: #fff;
+        border-radius: 16px;
+        padding: 18px;
+        margin-bottom: 14px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+        border: 1px solid #f1f5f9;
+    }
+
+    @media (max-width: 640px) {
+        .page-header { padding: 28px 22px; }
+        .filter-bar { padding: 16px 20px; }
+        .premium-table { display: none; }
+    }
+    @media (min-width: 641px) {
+        .mobile-cards { display: none; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-wrapper">
+    <div id="permission-dashboard-content" style="position: relative;">
+        <!-- Loading Overlay -->
+        <div class="loading-overlay">
+            <div class="spinner-custom"></div>
+        </div>
+
+        <!-- ── Page Header ── -->
+        <div class="page-header">
+            <h1><i class="bi bi-shield-check me-2"></i>Permission Approvals</h1>
+            <p>Manage and track employee short absence requests in real time.</p>
+        </div>
+
+        <!-- ── Stats ── -->
+        <div class="stat-grid">
+            <div class="stat-card">
+                <div class="stat-icon-wrap" style="background: #fffbeb;">
+                    <i class="bi bi-hourglass-split text-warning"></i>
+                </div>
+                <div class="stat-text">
+                    <div class="num text-warning">{{ pending_count }}</div>
+                    <div class="lbl">Pending</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon-wrap" style="background: #f0fdf4;">
+                    <i class="bi bi-check-circle-fill text-success"></i>
+                </div>
+                <div class="stat-text">
+                    <div class="num text-success">{{ approved_count }}</div>
+                    <div class="lbl">Approved (MTD)</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon-wrap" style="background: #fef2f2;">
+                    <i class="bi bi-x-circle-fill text-danger"></i>
+                </div>
+                <div class="stat-text">
+                    <div class="num text-danger">{{ rejected_count }}</div>
+                    <div class="lbl">Rejected (MTD)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Content Card ── -->
+        <div class="content-card">
+            <!-- Filter Bar -->
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <label>From Date</label>
+                    <input type="date" id="start-date-input" class="filter-input" value="{{ start_date }}">
+                </div>
+                <div class="filter-group">
+                    <label>To Date</label>
+                    <input type="date" id="end-date-input" class="filter-input" value="{{ end_date }}">
+                </div>
+                <div class="filter-group">
+                    <label>Status</label>
+                    <select id="status-filter-select" class="filter-input">
+                        <option value="Pending"  {% if current_status == 'Pending'  %}selected{% endif %}>⏳ Pending</option>
+                        <option value="Approved" {% if current_status == 'Approved' %}selected{% endif %}>✅ Approved</option>
+                        <option value="Rejected" {% if current_status == 'Rejected' %}selected{% endif %}>❌ Rejected</option>
+                    </select>
+                </div>
+                <a href="{% url 'admin_permission_approval' %}" class="btn-reset">
+                    <i class="bi bi-arrow-counterclockwise"></i> Reset
+                </a>
+            </div>
+
+            <!-- Table Header -->
+            <div class="table-header">
+                <h6><i class="bi bi-list-ul me-2 text-muted"></i>Requests</h6>
+                <span class="count-badge">{{ requests|length }} record{{ requests|length|pluralize }}</span>
+            </div>
+
+            <!-- ── Desktop Table ── -->
+            <div class="table-responsive">
+                <table class="premium-table">
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Date</th>
+                            <th>Time Window</th>
+                            <th>Reason</th>
+                            <th class="text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for req in requests %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="avatar-wrap">
+                                        {{ req.employee.user.name|slice:":1" }}{{ req.employee.user.name.split.1|slice:":1" }}
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold text-dark" style="font-size:0.92rem;">{{ req.employee.user.name }}</div>
+                                        <div class="text-muted fw-bold" style="font-size:0.75rem;">{{ req.employee.employee_id }} • {{ req.employee.department.name|default:"-" }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="fw-bold text-dark" style="font-size:0.9rem;">{{ req.date|date:"d M, Y" }}</div>
+                            </td>
+                            <td>
+                                <span class="time-badge">
+                                    <i class="bi bi-clock-fill"></i>
+                                    {{ req.start_time|time:"h:i A" }} – {{ req.end_time|time:"h:i A" }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="text-muted" style="font-size:0.85rem; line-height:1.45; max-width:240px;">{{ req.reason }}</div>
+                            </td>
+                            <td class="text-center">
+                                {% if req.status == 'Pending' %}
+                                    <form action="{% url 'admin_update_permission' %}" method="POST" class="d-flex justify-content-center gap-2">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="permission_id" value="{{ req.id }}">
+                                        <button type="submit" name="status" value="Approved" class="btn-approve" title="Approve">
+                                            <i class="bi bi-check2"></i>
+                                        </button>
+                                        <button type="submit" name="status" value="Rejected" class="btn-reject" title="Reject">
+                                            <i class="bi bi-x-lg"></i>
+                                        </button>
+                                    </form>
+                                {% else %}
+                                    <span class="status-badge {% if req.status == 'Approved' %}bg-success-subtle text-success{% else %}bg-danger-subtle text-danger{% endif %}">
+                                        {{ req.status }}
+                                    </span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5">
+                                <div class="empty-state">
+                                    <div class="empty-icon"><i class="bi bi-inbox"></i></div>
+                                    <div class="fw-bold text-muted" style="font-size:0.95rem;">No permission requests found</div>
+                                    <div class="text-muted small mt-1">Try adjusting the filters or date range above.</div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- ── Mobile Cards ── -->
+            <div class="mobile-cards p-3">
+                {% for req in requests %}
+                <div class="request-card">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="avatar-wrap">{{ req.employee.user.name|slice:":1" }}</div>
+                            <div>
+                                <div class="fw-bold text-dark" style="font-size:0.9rem;">{{ req.employee.user.name }}</div>
+                                <div class="text-muted fw-semibold" style="font-size:0.72rem;">{{ req.employee.employee_id }}</div>
+                            </div>
+                        </div>
+                        {% if req.status == 'Pending' %}
+                            <form action="{% url 'admin_update_permission' %}" method="POST" class="d-flex gap-2">
+                                {% csrf_token %}
+                                <input type="hidden" name="permission_id" value="{{ req.id }}">
+                                <button type="submit" name="status" value="Approved"  class="btn-approve"><i class="bi bi-check2"></i></button>
+                                <button type="submit" name="status" value="Rejected"  class="btn-reject"><i class="bi bi-x-lg"></i></button>
+                            </form>
+                        {% else %}
+                            <span class="status-badge {% if req.status == 'Approved' %}bg-success-subtle text-success{% else %}bg-danger-subtle text-danger{% endif %}">{{ req.status }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="d-flex flex-wrap gap-2 mb-2">
+                        <span class="badge bg-light text-muted border" style="font-size:0.75rem;padding:5px 10px;">
+                            <i class="bi bi-calendar3 me-1"></i>{{ req.date|date:"d M, Y" }}
+                        </span>
+                        <span class="time-badge" style="font-size:0.72rem;">
+                            <i class="bi bi-clock-fill"></i>{{ req.start_time|time:"h:i A" }} – {{ req.end_time|time:"h:i A" }}
+                        </span>
+                    </div>
+                    <div class="text-muted small" style="line-height:1.45;">{{ req.reason }}</div>
+                </div>
+                {% empty %}
+                <div class="empty-state">
+                    <div class="empty-icon"><i class="bi bi-inbox"></i></div>
+                    <div class="fw-bold text-muted">No permission requests found</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const content = document.getElementById('permission-dashboard-content');
+
+        // ── Update stat counter cards instantly ──
+        const updateStats = (pending, approved, rejected) => {
+            const nums = content.querySelectorAll('.stat-text .num');
+            if (nums.length >= 3) {
+                nums[0].textContent = pending;
+                nums[1].textContent = approved;
+                nums[2].textContent = rejected;
+            }
+        };
+
+        // ── Remove (or replace) the row/card for a resolved request ──
+        const resolveRow = (permissionId, newStatus) => {
+            const currentFilter = document.getElementById('status-filter-select')?.value || 'Pending';
+            const badgeClass = newStatus === 'Approved'
+                ? 'bg-success-subtle text-success'
+                : 'bg-danger-subtle text-danger';
+            const badgeHtml = `<span class="status-badge ${badgeClass}">${newStatus}</span>`;
+
+            // Desktop table row
+            const tableCell = content.querySelector(
+                `table form input[value="${permissionId}"]`
+            )?.closest('td');
+            if (tableCell) {
+                if (currentFilter === 'Pending') {
+                    // Animate and remove the entire row
+                    const row = tableCell.closest('tr');
+                    row.style.transition = 'opacity 0.35s, transform 0.35s';
+                    row.style.opacity = '0';
+                    row.style.transform = 'translateX(20px)';
+                    setTimeout(() => {
+                        row.remove();
+                        updateRecordCount();
+                    }, 360);
+                } else {
+                    tableCell.innerHTML = badgeHtml;
+                }
+            }
+
+            // Mobile card
+            const cardForm = content.querySelector(
+                `.request-card form input[value="${permissionId}"]`
+            )?.closest('form');
+            if (cardForm) {
+                if (currentFilter === 'Pending') {
+                    const card = cardForm.closest('.request-card');
+                    card.style.transition = 'opacity 0.35s, transform 0.35s';
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateX(20px)';
+                    setTimeout(() => card.remove(), 360);
+                } else {
+                    cardForm.outerHTML = badgeHtml;
+                }
+            }
+        };
+
+        // ── Update the "X records" badge ──
+        const updateRecordCount = () => {
+            const rows = content.querySelectorAll('table tbody tr:not(.empty-row)');
+            const badge = content.querySelector('.count-badge');
+            if (badge) {
+                const n = rows.length;
+                badge.textContent = `${n} record${n !== 1 ? 's' : ''}`;
+            }
+        };
+
+        // ── Full page refresh (used only for filter changes) ──
+        const refresh = () => {
+            const startDateInput = document.getElementById('start-date-input');
+            const endDateInput   = document.getElementById('end-date-input');
+            const statusFilter   = document.getElementById('status-filter-select');
+            if (!startDateInput || !endDateInput || !statusFilter) return;
+
+            const url = new URL(window.location.href);
+            url.searchParams.set('start_date', startDateInput.value);
+            url.searchParams.set('end_date',   endDateInput.value);
+            url.searchParams.set('status',     statusFilter.value);
+
+            content.classList.add('refreshing');
+
+            fetch(url)
+                .then(r => r.text())
+                .then(html => {
+                    const doc = new DOMParser().parseFromString(html, 'text/html');
+                    const newContent = doc.getElementById('permission-dashboard-content');
+                    if (newContent) {
+                        content.innerHTML = newContent.innerHTML;
+                        bindListeners();
+                    }
+                    content.classList.remove('refreshing');
+                    window.history.pushState({}, '', url);
+                })
+                .catch(() => content.classList.remove('refreshing'));
+        };
+
+        const bindListeners = () => {
+            const s = document.getElementById('start-date-input');
+            const e = document.getElementById('end-date-input');
+            const f = document.getElementById('status-filter-select');
+            if (s) s.addEventListener('change', refresh);
+            if (e) e.addEventListener('change', refresh);
+            if (f) f.addEventListener('change', refresh);
+
+            document.querySelectorAll('table form, .request-card form').forEach(form => {
+                form.addEventListener('submit', (ev) => {
+                    ev.preventDefault();
+
+                    const submitter = ev.submitter;
+                    const permissionId = form.querySelector('input[name="permission_id"]')?.value;
+                    const formData = new FormData(form);
+
+                    if (submitter && submitter.name) {
+                        formData.append(submitter.name, submitter.value);
+                    }
+
+                    // Show spinner on the clicked button, disable all buttons
+                    const originalHtml = submitter.innerHTML;
+                    submitter.innerHTML = '<span class="btn-spinner"></span>';
+                    submitter.classList.add('is-loading');
+                    form.querySelectorAll('button').forEach(btn => {
+                        btn.disabled = true;
+                    });
+
+                    const restoreButtons = () => {
+                        submitter.innerHTML = originalHtml;
+                        submitter.classList.remove('is-loading');
+                        form.querySelectorAll('button').forEach(btn => {
+                            btn.disabled = false;
+                        });
+                    };
+
+                    fetch(form.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            // ✅ Instant DOM update — no full page reload needed
+                            resolveRow(permissionId, data.new_status);
+                            updateStats(data.pending_count, data.approved_count, data.rejected_count);
+                        } else {
+                            alert('Error: ' + data.message);
+                            restoreButtons();
+                        }
+                    })
+                    .catch(() => {
+                        restoreButtons();
+                    });
+                });
+            });
+        };
+
+        bindListeners();
+    });
+</script>
+{% endblock %}

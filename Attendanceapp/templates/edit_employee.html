@@ -1,0 +1,241 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit Employee{% endblock %}
+
+{% block extra_css %}
+<style>
+    .container { max-width: 900px; margin-top: 40px; }
+    .form-container { 
+        background: #fff; 
+        padding: 40px; 
+        border-radius: 24px; 
+        box-shadow: 0 20px 50px rgba(0,0,0,0.08); 
+        border: 1px solid #f1f5f9;
+    }
+    .section-header {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: #1e293b;
+        margin-bottom: 25px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid #f1f5f9;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .section-header i {
+        color: var(--accent-color);
+        background: #f1f5f9;
+        padding: 8px;
+        border-radius: 10px;
+        font-size: 1.1rem;
+    }
+    .form-label { 
+        font-size: 0.75rem; 
+        font-weight: 800; 
+        color: #64748b; 
+        text-transform: uppercase; 
+        margin-bottom: 10px; 
+        letter-spacing: 0.5px;
+    }
+    .form-control, .form-select { 
+        border-radius: 12px; 
+        padding: 14px 16px; 
+        border: 2px solid #f1f5f9; 
+        background: #f8fafc; 
+        font-size: 0.95rem; 
+        color: #334155;
+        transition: all 0.2s ease;
+    }
+    .form-control:focus, .form-select:focus { 
+        border-color: var(--accent-color); 
+        box-shadow: 0 0 0 4px rgba(102, 16, 242, 0.08); 
+        background: #fff; 
+        outline: none;
+    }
+    .form-control[readonly] {
+        background: #f1f5f9;
+        color: #94a3b8;
+        cursor: not-allowed;
+    }
+    h2 { 
+        font-weight: 850; 
+        color: #0f172a; 
+        letter-spacing: -1px; 
+        font-size: 2.25rem;
+    }
+    .btn-submit {
+        background: var(--accent-color, #0f172a);
+        color: white;
+        padding: 16px 40px;
+        border-radius: 16px;
+        font-weight: 700;
+        border: none;
+        transition: transform 0.2s;
+    }
+    .btn-submit:hover {
+        opacity: 0.9;
+        transform: translateY(-2px);
+    }
+    .btn-back {
+        background: #f1f5f9;
+        color: #475569;
+        padding: 16px 30px;
+        border-radius: 16px;
+        font-weight: 700;
+        border: none;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+    }
+    .btn-back:hover {
+        background: #e2e8f0;
+        color: #1e293b;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mb-5">
+    <div class="form-container">
+        <h2 class="mb-5 d-flex align-items-center gap-3">
+            <i class="bi bi-pencil-square text-primary"></i> Edit Employee Profile
+        </h2>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <!-- Employee ID (Read-only) -->
+            <div class="mb-5">
+                <label class="form-label">Employee ID</label>
+                <input type="text" class="form-control" value="{{ employee.employee_id }}" readonly>
+            </div>
+
+            <!-- Basic Information -->
+            <div class="row g-4 mb-5">
+                <div class="col-md-6">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" name="name" class="form-control" value="{{ employee.user.name }}" required placeholder="Enter full name">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" name="email" class="form-control" value="{{ employee.user.email }}" required placeholder="example@company.com">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Phone Number</label>
+                    <input type="tel" name="phone" class="form-control" value="{{ employee.phone }}" required placeholder="10-digit number">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Department / Role</label>
+                    <select name="department" class="form-select" required>
+                        <option value="">Select Department</option>
+                        <optgroup label="👨‍💼 Employee">
+                            {% for dept in employee_roles %}
+                            <option value="{{ dept.id }}" {% if employee.department and employee.department.id == dept.id %}selected{% endif %}>
+                                {{ dept.name }}
+                            </option>
+                            {% endfor %}
+                        </optgroup>
+                        <optgroup label="🎓 Intern">
+                            {% for dept in intern_roles %}
+                            <option value="{{ dept.id }}" {% if employee.department and employee.department.id == dept.id %}selected{% endif %}>
+                                {{ dept.name }}
+                            </option>
+                            {% endfor %}
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Joining Date</label>
+                    <input type="date" name="joining_date" class="form-control" value="{{ employee.joining_date|date:'Y-m-d' }}">
+                </div>
+            </div>
+
+            <!-- Banking Details Section -->
+            <div class="section-header mt-5">
+                <i class="bi bi-bank"></i> Banking Details
+            </div>
+            <div class="row g-4 mb-5">
+                <div class="col-md-4">
+                    <label class="form-label">Account Number</label>
+                    <input type="text" name="account_number" class="form-control" value="{{ employee.account_number|default:'' }}" placeholder="Enter account number">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">IFSC Code</label>
+                    <input type="text" name="ifsc_code" class="form-control" value="{{ employee.ifsc_code|default:'' }}" placeholder="E.G. SBIN0001234">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Bank Name</label>
+                    <input type="text" name="bank_name" class="form-control" value="{{ employee.bank_name|default:'' }}" placeholder="e.g. State Bank of India">
+                </div>
+            </div>
+
+            <!-- Identity Documents Section -->
+            <div class="section-header mt-5">
+                <i class="bi bi-card-list"></i> Identity Documents
+            </div>
+            <div class="row g-4 mb-5">
+                <div class="col-md-6">
+                    <label class="form-label">PAN Number</label>
+                    <input type="text" name="pan_number" class="form-control" value="{{ employee.pan_number|default:'' }}" placeholder="E.G. ABCDE1234F">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Aadhaar Card Number</label>
+                    <input type="text" name="aadhaar_card_number" class="form-control" value="{{ employee.aadhaar_card_number|default:'' }}" placeholder="12-digit Aadhaar number">
+                </div>
+            </div>
+
+            <!-- Address Section -->
+            <div class="section-header mt-5">
+                <i class="bi bi-geo-alt"></i> Address
+            </div>
+            <div class="mb-5">
+                <label class="form-label">Full Address</label>
+                <textarea name="address" class="form-control" rows="4" placeholder="Enter full address">{{ employee.address|default:'' }}</textarea>
+            </div>
+
+            <!-- Buttons -->
+            <div class="d-flex flex-column flex-sm-row justify-content-between mt-5 gap-3">
+                <a href="{% url 'employeemanagement' %}" class="btn btn-back">
+                    <i class="bi bi-arrow-left me-2"></i> Cancel
+                </a>
+                <button type="submit" class="btn btn-submit">
+                    <i class="bi bi-check-circle me-2"></i> Update Employee Profile
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ✅ Success Modal -->
+<div class="modal fade" id="successModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 24px;">
+            <div class="modal-body p-5 text-center">
+                <div class="bg-success bg-opacity-10 text-success rounded-circle d-inline-flex align-items-center justify-content-center mb-4" style="width: 80px; height: 80px;">
+                    <i class="bi bi-check2 fs-1"></i>
+                </div>
+                <h4 class="fw-bold mb-3">Updated Successfully!</h4>
+                <p class="text-muted mb-4">Employee information has been updated.</p>
+                <a href="{% url 'employeemanagement' %}" class="btn btn-submit w-100">Back to List</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+  {% if messages %}
+    {% for message in messages %}
+      {% if message.tags == "success" %}
+        <script>
+          document.addEventListener("DOMContentLoaded", function () {
+            var successModal = new bootstrap.Modal(document.getElementById("successModal"));
+            successModal.show();
+          });
+        </script>
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+{% endblock %}
