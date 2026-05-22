@@ -160,8 +160,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Open https://maps.app.goo.gl/tPShGypWLgSoiEpm8 in your browser,
 # look at the URL bar for @lat,lng and fill in the values below.
 # -----------------------------------------------------------------------------------
-OFFICE_LATITUDE = 8.1631162   # Nim Technologies, Tirunelveli
-OFFICE_LONGITUDE = 77.4108498  # Nim Technologies, Tirunelveli
+OFFICE_LATITUDE = 8.1631162   # company Technologies, Tirunelveli
+OFFICE_LONGITUDE = 77.4108498  # company Technologies, Tirunelveli
 GEOFENCE_RADIUS_METERS = 10000  # Increased for local testing
 
 # -----------------------------------------------------------------------------------
