@@ -86,16 +86,14 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": "postgres",
-        "USER": "postgres.gnizltjezjydkhnhvbyd",
-        # Because we are using a dictionary, do NOT URL-encode the password.
-        # If your actual password is "Nimtech 26", type "Nimtech 26" here.
-        # If your actual password is "Nimtech%2026", type "Nimtech%2026" here.
-        "PASSWORD": "nim@Attend2026!", 
-        "HOST": "aws-1-ap-northeast-2.pooler.supabase.com",
+        "USER": "postgres.nmzwqxymwxevtscedvpc",
+        "PASSWORD": "Saikumar2708",
+        "HOST": "aws-1-ap-southeast-2.pooler.supabase.com",
         "PORT": "5432",
         "CONN_MAX_AGE": 0,
         "OPTIONS": {
             "sslmode": "require",
+            "connect_timeout": 10,
         },
     }
 }
@@ -171,4 +169,4 @@ GEOFENCE_RADIUS_METERS = 10000  # Increased for local testing
 # -----------------------------------------------------------------------------------
 SESSION_COOKIE_AGE = 90 * 24 * 60 * 60  # 90 Days in seconds
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
-SESSION_SAVE_EVERY_REQUEST = True
+SESSION_SAVE_EVERY_REQUEST = True
