@@ -170,3 +170,16 @@ GEOFENCE_RADIUS_METERS = 10000  # Increased for local testing
 SESSION_COOKIE_AGE = 90 * 24 * 60 * 60  # 90 Days in seconds
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_SAVE_EVERY_REQUEST = True
+STATIC_URL = '/static/'
+
+# -----------------------------------------------------------------------------------
+# STATIC FILES
+# -----------------------------------------------------------------------------------
+
+STATIC_URL = '/static/'
+
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
+STATICFILES_DIRS = [
+    BASE_DIR / "Attendanceapp" / "static",
+]
